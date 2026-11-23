@@ -15,7 +15,7 @@ export class NoopRefiner implements Refiner {
 }
 
 export class OpenAIRefiner implements Refiner {
-  readonly minScore = 0.1;
+  readonly minScore = 0;
 
   constructor(
     private apiKey: string,
@@ -36,7 +36,7 @@ export class OpenAIRefiner implements Refiner {
             {
               role: "system",
               content:
-                'You moderate crypto Telegram groups. Rate whether the message is a scam/spam. Reply JSON only: {"score":0..1,"reason":"<=50 chars"}.',
+                'You moderate crypto Telegram groups. Rate how likely the message is a scam, phishing or spam. score 1 means certainly a scam, 0 means harmless. Warnings that tell people to avoid scams are harmless. Reply JSON only: {"score":0..1,"reason":"<=50 chars"}.',
             },
             { role: "user", content: text.slice(0, 400) },
           ],
