@@ -1,0 +1,152 @@
+[
+  {
+    "id": 1,
+    "expectedRisk": "high",
+    "type": "Fake support",
+    "text": "Hi, I'm from Ledger Support. Your wallet has been flagged. DM me now to verify your seed phrase and avoid suspension."
+  },
+  {
+    "id": 2,
+    "expectedRisk": "high",
+    "type": "Drainer link",
+    "text": "Free airdrop live! Claim your 5000 tokens before it ends: https://claim-airdrop-eth.example/connect (connect wallet)"
+  },
+  {
+    "id": 3,
+    "expectedRisk": "high",
+    "type": "Giveaway",
+    "text": "BIG GIVEAWAY! Send 0.1 ETH to the address below and receive 1 ETH back instantly. Verified by the team!"
+  },
+  {
+    "id": 4,
+    "expectedRisk": "high",
+    "type": "Impersonated admin",
+    "text": "This is the admin (new account). Group is migrating, everyone re-verify your wallet here: https://verify-wallet.example/migrate"
+  },
+  {
+    "id": 5,
+    "expectedRisk": "high",
+    "type": "Phishing",
+    "text": "Your account will be banned in 24h. Confirm your identity: https://telegram-verify.example/login"
+  },
+  {
+    "id": 6,
+    "expectedRisk": "high",
+    "type": "Fake support",
+    "text": "Need help with a stuck transaction? Message our support agent @SupportDesk_Official, we'll fix it fast. Share your 12 word recovery phrase."
+  },
+  {
+    "id": 7,
+    "expectedRisk": "high",
+    "type": "Drainer link",
+    "text": "Mint is open for the stealth drop, only 50 left! https://mint-now.example/approve Click Approve All to whitelist."
+  },
+  {
+    "id": 8,
+    "expectedRisk": "high",
+    "type": "Giveaway",
+    "text": "Elon is giving away 5000 BTC to community members, join: https://btc-double.example"
+  },
+  {
+    "id": 9,
+    "expectedRisk": "medium",
+    "type": "Pump signal",
+    "text": "Insider tip: $MOONX will 100x tonight. Buy now before listing, join my VIP signals channel t.me/vipsignals_example"
+  },
+  {
+    "id": 10,
+    "expectedRisk": "medium",
+    "type": "Recruitment",
+    "text": "Earn $500 daily from home, no experience needed. DM me for details."
+  },
+  {
+    "id": 11,
+    "expectedRisk": "medium",
+    "type": "Impersonated admin",
+    "text": "Hey I'm one of the mods, can you DM me your wallet address so I can add you to the whitelist?"
+  },
+  {
+    "id": 12,
+    "expectedRisk": "medium",
+    "type": "Phishing",
+    "text": "Check if your wallet is eligible for the rewards: http://eligibility-check.example"
+  },
+  {
+    "id": 13,
+    "expectedRisk": "medium",
+    "type": "Unsolicited promo",
+    "text": "New token launching, great tokenomics, join our chat and buy early: t.me/newcoin_example"
+  },
+  {
+    "id": 14,
+    "expectedRisk": "medium",
+    "type": "Support lure",
+    "text": "Anyone having trouble with withdrawals? Contact support on WhatsApp +000 000 0000 for quick help."
+  },
+  {
+    "id": 15,
+    "expectedRisk": "low",
+    "type": "Off-topic",
+    "text": "Selling cheap sunglasses, check my store, link in bio"
+  },
+  {
+    "id": 16,
+    "expectedRisk": "low",
+    "type": "Repeated message",
+    "text": "gm gm gm gm gm gm gm gm gm gm"
+  },
+  {
+    "id": 17,
+    "expectedRisk": "low",
+    "type": "Benign link",
+    "text": "Here is the governance proposal for review: https://snapshot.org/#/example.eth/proposal/0x123"
+  },
+  {
+    "id": 18,
+    "expectedRisk": "low",
+    "type": "Benign question",
+    "text": "Does anyone know when the next testnet reset is happening?"
+  },
+  {
+    "id": 19,
+    "expectedRisk": "low",
+    "type": "Benign",
+    "text": "The docs for the SDK are at https://docs.example.org, section 4 covers signing."
+  },
+  {
+    "id": 20,
+    "expectedRisk": "low",
+    "type": "Benign",
+    "text": "Thanks for the help earlier, the transaction went through fine."
+  },
+  {
+    "id": 21,
+    "expectedRisk": "low",
+    "type": "Benign security advice",
+    "text": "Reminder: admins will never DM you first. Never share your seed phrase with anyone."
+  },
+  {
+    "id": 22,
+    "expectedRisk": "low",
+    "type": "Benign",
+    "text": "What's the gas looking like right now? Thinking of bridging later."
+  },
+  {
+    "id": 23,
+    "expectedRisk": "low",
+    "type": "Benign",
+    "text": "Great AMA today, the roadmap looks solid. Looking forward to the mainnet launch."
+  },
+  {
+    "id": 24,
+    "expectedRisk": "low",
+    "type": "Benign",
+    "text": "Can someone explain the difference between optimistic and zk rollups?"
+  },
+  {
+    "id": 25,
+    "expectedRisk": "low",
+    "type": "Benign link",
+    "text": "Block explorer for the contract: https://etherscan.io/address/0x0000000000000000000000000000000000000000"
+  }
+]

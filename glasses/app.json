@@ -1,0 +1,25 @@
+{
+  "package_id": "com.gavel.glasses",
+  "edition": "202601",
+  "name": "Gavel",
+  "version": "0.1.0",
+  "min_app_version": "2.2.10",
+  "min_sdk_version": "0.0.16",
+  "entrypoint": "index.html",
+  "permissions": [
+    {
+      "name": "network",
+      "desc": "Fetches flagged Telegram messages from the Gavel server and sends your moderation decisions.",
+      "whitelist": [
+        "http://localhost:8787"
+      ]
+    },
+    {
+      "name": "g2-microphone",
+      "desc": "Captures your spoken moderation command while you hold a long press."
+    }
+  ],
+  "supported_languages": [
+    "en"
+  ]
+}

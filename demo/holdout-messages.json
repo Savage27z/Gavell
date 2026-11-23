@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "scam": true,
+    "text": "Urgent: Binance security team here. Your withdrawals are frozen, message our agent @bn_help_desk to unlock."
+  },
+  {
+    "id": 2,
+    "scam": true,
+    "text": "Congratulations! You won 2 ETH in our community lottery. Claim at https://eth-lottery-win.top/claim"
+  },
+  {
+    "id": 3,
+    "scam": true,
+    "text": "I turned 200 USDT into 4k in a week with this signal group, ask me how, guaranteed results"
+  },
+  {
+    "id": 4,
+    "scam": true,
+    "text": "Hello sir, I lost my crypto to a scam but a recovery expert on WhatsApp got it back for me, +1 555 0102"
+  },
+  {
+    "id": 5,
+    "scam": true,
+    "text": "Pinned: validate your wallet to keep receiving staking rewards https://stake-validate.live"
+  },
+  {
+    "id": 6,
+    "scam": true,
+    "text": "hey bro can u help me, im stuck on my wallet, dm me and i send u 50 usdt for helping"
+  },
+  {
+    "id": 7,
+    "scam": true,
+    "text": "NEW MEME COIN presale starts in 10 minutes!! 100x potential, join t.me/+AbCdEf12345"
+  },
+  {
+    "id": 8,
+    "scam": true,
+    "text": "Admin here: the group will be deleted unless everyone connects their wallet at https://group-safe.click"
+  },
+  {
+    "id": 9,
+    "scam": true,
+    "text": "Free NFT mint for all holders, connect your wallet before supply runs out: https://nftdrop.xyz"
+  },
+  {
+    "id": 10,
+    "scam": true,
+    "text": "Send me 0.05 BTC and I will send you back 0.5 BTC in 1 hour, trusted trader with proofs"
+  },
+  {
+    "id": 11,
+    "scam": false,
+    "text": "Does anyone know when the next testnet reset is happening?"
+  },
+  {
+    "id": 12,
+    "scam": false,
+    "text": "Here's the docs link for the SDK: https://docs.example.com/getting-started"
+  },
+  {
+    "id": 13,
+    "scam": false,
+    "text": "Lol the price dipped 12% today, I'm not selling though."
+  },
+  {
+    "id": 14,
+    "scam": false,
+    "text": "Can an admin pin the FAQ message please? New members keep asking the same thing."
+  },
+  {
+    "id": 15,
+    "scam": false,
+    "text": "Reminder: never share your recovery phrase with anyone, including people claiming to be support."
+  },
+  {
+    "id": 16,
+    "scam": false,
+    "text": "Check out my article on L2 fees: https://medium.com/@dev/l2-fees-explained"
+  },
+  {
+    "id": 17,
+    "scam": false,
+    "text": "The airdrop snapshot for the real protocol is on Friday per the official blog, not a DM."
+  },
+  {
+    "id": 18,
+    "scam": false,
+    "text": "DM me if you want the Rust code for the indexer, happy to share"
+  },
+  {
+    "id": 19,
+    "scam": false,
+    "text": "Our team will host an AMA tomorrow at 3pm UTC in the voice chat"
+  },
+  {
+    "id": 20,
+    "scam": false,
+    "text": "Anyone in Lagos for the meetup this weekend? Message me if you want details"
+  }
+]

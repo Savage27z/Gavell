@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gavel</title>
+    <style>
+      body { margin: 0; padding: 24px; font-family: system-ui, sans-serif; background: #050a05; color: #7dff7d; }
+      h1 { font-size: 20px; margin: 0 0 8px; }
+      p { margin: 0 0 16px; opacity: 0.8; }
+      form { display: flex; gap: 8px; }
+      form[hidden] { display: none; }
+      input { flex: 1; padding: 12px; font-size: 18px; letter-spacing: 4px; background: #000; color: inherit; border: 1px solid #2f6f2f; border-radius: 6px; }
+      button { padding: 12px 18px; font-size: 16px; background: #1c5a1c; color: #eaffea; border: 0; border-radius: 6px; }
+      #status { margin-top: 16px; font-size: 14px; opacity: 0.7; }
+    </style>
+  </head>
+  <body>
+    <h1>Gavel</h1>
+    <p>Enter the pairing code from your server to connect your glasses.</p>
+    <form id="pair-form">
+      <input id="pair-input" autocomplete="off" autocapitalize="characters" placeholder="Pairing code" />
+      <button type="submit">Pair</button>
+    </form>
+    <div id="status"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
