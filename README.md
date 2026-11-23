@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/logo.png" alt="Gavel logo" width="160"></p>
+
 # Gavel
 
 > Started from a prototype built before the event.
@@ -82,6 +84,15 @@ Live check with OpenRouter (`openai/gpt-4o-mini`) on the 20-message held-out set
 ## Before and during the hackathon
 
 Started from a prototype built before the event. Commits after the first one in this repository were made during the hackathon.
+
+Added during the event (commits after the first one):
+
+- The LLM now reviews every message, not only borderline ones. A model score of 0.65 or higher flags a message on its own, so scams with no keywords are caught.
+- Fixed the score direction in the LLM prompt, added Groq and OpenRouter configuration, and a 2.5 s LLM timeout so the queue never stalls.
+- A privacy note, and rewritten submission text and demo script that match the code.
+- Logo, and a recorded demo using the Even Hub simulator.
+
+Everything was tested in the simulator and a Telegram test group, not on real G2 glasses. The demo's voice command used a recorded phrase played into the simulator, and the wave shown is seeded demo data.
 
 ## Feature requests for Telegram / Even Hub APIs
 
