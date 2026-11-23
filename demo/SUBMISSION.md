@@ -1,5 +1,8 @@
 # DoraHacks submission draft
 
+## Demo video
+https://youtu.be/p-A0uJ_V0dM (silent screen recording with voice-over; simulator only; the wave is seeded demo data)
+
 ## Title
 Gavel: moderate Telegram scam waves from your glasses
 
@@ -23,8 +26,8 @@ The decision is short and urgent, and a moderator on shift keeps their eyes up a
 
 ## What is verified, and what is not
 - Verified against a real Telegram supergroup with a second account: flagging, mute, message delete and undo.
-- Verified in the Even Hub simulator: the card, wave press and undo, double press, auto-refresh, alerts and shift summary.
-- Verified once end to end: Whisper (Groq) transcription of a synthetic spoken phrase, parsed into a ban-and-delete command.
+- Verified in the Even Hub simulator: the card, wave press and undo, double press, auto-refresh, the NEW HIGH banner and shift summary.
+- Verified end to end in the simulator: a recorded phrase ("mute for a day") played into a virtual microphone while holding Long Press, transcribed by Whisper (Groq), parsed, and shown on the confirm screen. A computer-generated phrase, not a person speaking into real glasses.
 - LLM check (OpenRouter, gpt-4o-mini): 10 of 10 scams and 0 false positives on a 20-message set that was also used for tuning, against 7 of 10 for rules alone. A smoke test, not an accuracy claim.
 - Not verified: real G2 hardware, real speech from the glasses mic, and a real ban.
 

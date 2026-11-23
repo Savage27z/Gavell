@@ -4,6 +4,8 @@
 
 > Started from a prototype built before the event.
 
+Demo video: https://youtu.be/p-A0uJ_V0dM
+
 Glasses-first moderation queue for Telegram groups on Even Realities G2 (576x288 monochrome, gestures only, no camera or speaker). Built for the Heads Up hackathon.
 
 ## Problem
