@@ -7,15 +7,26 @@ const reply = (content: unknown, ok = true) =>
 const refiner = (fetchFn: typeof fetch) => new OpenAIRefiner("key", "https://llm.example/v1", "m", fetchFn);
 
 describe("OpenAIRefiner", () => {
-  it("averages the model score with the rules score and uses its reason", async () => {
+  it("averages a weak model score with the rules score", async () => {
+    const out = await refiner(reply({ score: 0.5, reason: "Maybe" })).refine("x", base);
+    expect(out.score).toBe(0.35);
+  });
+
+  it("sends a request timeout signal", async () => {
+    const fetchFn = reply({ score: 0.1, reason: "r" });
+    await refiner(fetchFn).refine("x", base);
+    expect((vi.mocked(fetchFn).mock.calls[0]![1] as { signal?: AbortSignal }).signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("a strong model score flags on its own and uses its reason", async () => {
     const out = await refiner(reply({ score: 0.9, reason: "Fake airdrop" })).refine("claim now", base);
-    expect(out).toEqual({ score: 0.55, risk: "medium", reason: "Fake airdrop" });
+    expect(out).toEqual({ score: 0.9, risk: "high", reason: "Fake airdrop" });
   });
 
   it("lifts a keyword-free scam above the flag threshold", async () => {
     const out = await refiner(reply({ score: 1, reason: "Send-and-receive scam" })).refine("send me 0.05 BTC", { score: 0, risk: "low", reason: "Looks fine" });
-    expect(out.score).toBe(0.5);
-    expect(out.risk).toBe("medium");
+    expect(out.score).toBe(1);
+    expect(out.risk).toBe("high");
   });
 
   it("keeps the rules verdict when the API errors", async () => {

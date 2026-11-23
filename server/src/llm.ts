@@ -14,6 +14,8 @@ export class NoopRefiner implements Refiner {
   }
 }
 
+const STRONG = 0.65;
+
 export class OpenAIRefiner implements Refiner {
   readonly minScore = 0;
 
@@ -28,6 +30,7 @@ export class OpenAIRefiner implements Refiner {
     try {
       const res = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
         method: "POST",
+        signal: AbortSignal.timeout(2500),
         headers: { "content-type": "application/json", authorization: `Bearer ${this.apiKey}` },
         body: JSON.stringify({
           model: this.model,
@@ -46,7 +49,8 @@ export class OpenAIRefiner implements Refiner {
       const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
       const parsed = JSON.parse(data.choices?.[0]?.message?.content ?? "{}") as { score?: number; reason?: string };
       if (typeof parsed.score !== "number" || parsed.score < 0 || parsed.score > 1) return base;
-      const score = Math.round(((base.score + parsed.score) / 2) * 100) / 100;
+      const blended = (base.score + parsed.score) / 2;
+      const score = Math.round((parsed.score >= STRONG ? Math.max(blended, parsed.score) : blended) * 100) / 100;
       const reason = typeof parsed.reason === "string" && parsed.reason ? parsed.reason.slice(0, 60) : base.reason;
       return { score, risk: riskFromScore(score), reason };
     } catch {

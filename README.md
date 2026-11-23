@@ -18,10 +18,12 @@ Crypto community moderators are always on call. Scams arrive in bursts (fake sup
 | Gesture | Action |
 |---|---|
 | Press | Runs the suggested action shown in the footer (repeat offenders and high risk escalate: ignore, mute 1 h, mute 24 h, ban + delete 10). Undo within 60 s |
-| Double press | Ignore |
+| Double press | Ignore (for a scam wave, ignores every item in the wave) |
 | Swipe down | Next / skip |
-| Swipe up | Undo the last action (valid 60 s) |
+| Swipe up | Undo the last action, or the whole wave (valid 60 s) |
 | Long press | Voice command, e.g. "mute for a day", "ban and delete their last 10". The parsed command is shown and needs a press to confirm. |
+
+Also: when several accounts post the same scam in one chat, the card shows WAVE xN and one press (or double press) acts on the whole wave, using the gentlest suggested action, and swipe up undoes it all. A NEW HIGH banner appears when more high-risk items arrive while you view a card, the card itself never changes under you, and the empty screen shows a shift summary. `GET /audit` lists every action.
 
 Nothing is ever moderated automatically. The server only acts when the glasses send an explicit action.
 
@@ -64,6 +66,7 @@ Telegram does not deliver bot messages to other bots in groups. So a second post
 - Undo is available for 60 seconds after any action. Deleted messages cannot be restored by Telegram, so undo restores the user, not the text.
 - Test group only while developing. Do not add the bot to a real community until you have reviewed the classifier's false positives.
 - No keys are committed. Tokens and the LLM key live only in `server/.env`, which is git-ignored, and are never logged.
+- Privacy: with `LLM_API_KEY` set, the text of every group message (first 400 characters) is sent to the LLM provider you configure, and with `STT_API_KEY` set, voice commands are sent to the speech provider. Leave both unset to keep everything on your server. Use a test group only.
 - Evaluation messages in `demo/scam-messages.json` use `.example` domains and placeholder values.
 
 ## Evaluation data
@@ -72,7 +75,7 @@ Telegram does not deliver bot messages to other bots in groups. So a second post
 
 `demo/holdout-messages.json` has 20 further messages (10 scams, 10 hard benign cases such as real warnings, docs links and legitimate "DM me" offers). It was written after the rules, scored once before any tuning, and then used to fix one false positive, so it is no longer a clean test.
 
-Rules-only results (`server/test/eval.test.ts`): dev set 14/14 scams flagged, 0 false positives (tuned on this set); held-out set 7/10 scams flagged, 0 false positives after the fix (8/10 with 1 false positive before it). Misses are phrased without any rule keyword, which is what the optional LLM pass (`LLM_API_KEY`) is for; with a key set, the LLM reviews every message, including ones the rules score at 0, so it can catch scams with no rule keyword. That means one LLM call per group message.
+Rules-only results (`server/test/eval.test.ts`): dev set 14/14 scams flagged, 0 false positives (tuned on this set); held-out set 7/10 scams flagged, 0 false positives after the fix (8/10 with 1 false positive before it). Misses are phrased without any rule keyword, which is what the optional LLM pass (`LLM_API_KEY`) is for; with a key set, the LLM reviews every message, including ones the rules score at 0, so it can catch scams with no rule keyword. That means one LLM call per group message, with a 2.5 second timeout, and the rules verdict is kept if the call fails. A model score of 0.65 or higher flags a message on its own; weaker scores are averaged with the rules score.
 
 Live check with OpenRouter (`openai/gpt-4o-mini`) on the 20-message held-out set: rules + LLM flagged 10/10 scams with 0 false positives (rules alone: 7/10). The first prompt did not say which way the score runs and returned 0 for an obvious scam; the fixed prompt, including a line that warnings are harmless, was written after seeing this set, so the set is not clean. It is a smoke test of 20 messages, not an accuracy claim.
 
