@@ -26,7 +26,7 @@ export function parseIntent(raw: string): ActionRequest | null {
   const base = parseBase(raw);
   if (!base || base.action === "ignore") return base;
   const t = raw.toLowerCase();
-  return /\b(the|whole|entire)\s+(wave|raid)\b|\b(all|every)\s+(of\s+)?(them|accounts|users)\b|\beveryone\b|\bthem all\b/.test(t) ? { ...base, wave: true } : base;
+  return /\b(the|whole|entire)\s+(wave|raid)\b|\b(all|every)\s+(of\s+)?(them|accounts|users)\b|\beveryone\b|\bthem all\b/.test(t) ? { ...base, deleteRecent: base.deleteRecent ?? 1, wave: true } : base;
 }
 
 function parseBase(raw: string): ActionRequest | null {

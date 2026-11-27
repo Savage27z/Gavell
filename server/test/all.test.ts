@@ -52,8 +52,8 @@ describe("intent parsing", () => {
   });
   it("mute for a day", () => {
     expect(parseIntent("mute for a day")).toEqual({ action: "mute", muteMinutes: 1440 });
-    expect(parseIntent("mute the wave")).toEqual({ action: "mute", muteMinutes: 1440, wave: true });
-    expect(parseIntent("ban all of them")).toEqual({ action: "ban", wave: true });
+    expect(parseIntent("mute the wave")).toEqual({ action: "mute", muteMinutes: 1440, deleteRecent: 1, wave: true });
+    expect(parseIntent("ban all of them")).toEqual({ action: "ban", deleteRecent: 1, wave: true });
     expect(parseIntent("ban and delete all their messages")).toEqual({ action: "ban", deleteRecent: 50 });
   });
   it("mute for 2 hours", () => {
