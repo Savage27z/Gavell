@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { RaidWatcher } from "./alert.js";
 import { classify } from "./classifier.js";
 import type { Refiner } from "./llm.js";
 import type { ModQueue } from "./queue.js";
@@ -28,6 +29,7 @@ export class ModService {
     private tg: TelegramGateway | null,
     private refiner: Refiner,
     private now: () => number = Date.now,
+    private watcher?: RaidWatcher,
   ) {}
 
   async ingest(msg: IncomingMessage): Promise<FlaggedItem | null> {
@@ -40,7 +42,7 @@ export class ModService {
     if (verdict.score < this.refiner.minScore) return null;
     verdict = await this.refiner.refine(msg.text, verdict);
     if (verdict.score < FLAG_THRESHOLD) return null;
-    return this.queue.add({
+    const added = this.queue.add({
       chatId: msg.chatId,
       chatTitle: msg.chatTitle,
       userId: msg.userId,
@@ -51,6 +53,8 @@ export class ModService {
       score: verdict.score,
       reason: verdict.reason,
     });
+    this.watcher?.observe(this.queue.get(added.id)!, this.queue.wave(added.id));
+    return added;
   }
 
   private serialize<T>(key: string, task: () => Promise<T>): Promise<T> {

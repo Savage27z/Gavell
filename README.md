@@ -83,6 +83,15 @@ Rules-only results (`server/test/eval.test.ts`): dev set 14/14 scams flagged, 0 
 
 Live check with OpenRouter (`openai/gpt-4o-mini`) on the 20-message held-out set: rules + LLM flagged 10/10 scams with 0 false positives (rules alone: 7/10). The first prompt did not say which way the score runs and returned 0 for an obvious scam; the fixed prompt, including a line that warnings are harmless, was written after seeing this set, so the set is not clean. It is a smoke test of 20 messages, not an accuracy claim.
 
+## Raid alert (wakes you, never acts)
+
+When 3 or more different accounts post the same high-risk scam in one group, Gavel alerts the people on call, once per raid (10 minute cooldown per group). It only wakes people up. It never mutes, deletes or bans anything, and every action still needs a gesture or a confirmed voice command.
+
+- **Telegram DM:** send /oncall to the bot in a private chat to opt in, /off to stop. A bot can only message you after you have started it.
+- **Phone call (optional):** set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM, ONCALL_PHONES (comma separated, +country format) and PUBLIC_URL (a URL Twilio can reach, for the spoken message). Twilio trial accounts can only call numbers you verified, play a trial notice first, and reject inline TwiML, which is why the message is fetched from PUBLIC_URL/twiml/raid. The endpoint only ever reads the last raid text and takes no input.
+- **Tested:** unit tests (threshold, distinct accounts, cooldown, failures in one channel) and one real Twilio test call to a verified number. Not tested: a real raid from three accounts, and whether a call wakes anyone at 3 a.m.
+- Local test: POST /dev/raid-test (non-production only) fires a labelled test alert.
+
 ## Before and during the hackathon
 
 Started from a prototype built before the event. Commits after the first one in this repository were made during the hackathon.
@@ -93,6 +102,7 @@ Added during the event (commits after the first one):
 - Fixed the score direction in the LLM prompt, added Groq and OpenRouter configuration, and a 2.5 s LLM timeout so the queue never stalls.
 - A privacy note, and rewritten submission text and demo script that match the code.
 - Logo, and a recorded demo using the Even Hub simulator.
+- Raid alert: Telegram DM and optional Twilio call to on-call moderators when a wave of 3 or more accounts hits.
 
 Everything was tested in the simulator and a Telegram test group, not on real G2 glasses. The demo's voice command used a recorded phrase played into the simulator, and the wave shown is seeded demo data.
 

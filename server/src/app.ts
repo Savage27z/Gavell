@@ -12,22 +12,28 @@ export interface AppOptions {
   pairingCode: string;
   transcriber: Transcriber | null;
   production: boolean;
+  raidTest?: () => Promise<void>;
+  twiml?: () => string;
 }
 
 const actions: Action[] = ["ban", "mute", "ignore"];
 
-export function buildApp({ service, pairingCode, transcriber, production }: AppOptions) {
+export function buildApp({ service, pairingCode, transcriber, production, raidTest, twiml }: AppOptions) {
   const app = Fastify({ logger: false, bodyLimit: 10 * 1024 * 1024 });
   app.register(cors, { origin: true, allowedHeaders: ["content-type", "x-pairing-code"] });
 
   app.addHook("onRequest", async (req, reply) => {
-    if (req.method === "OPTIONS" || req.url === "/health") return;
+    if (req.method === "OPTIONS" || req.url === "/health" || req.url.split("?")[0] === "/twiml/raid") return;
     const sent = Buffer.from(String(req.headers["x-pairing-code"] ?? ""));
     const expected = Buffer.from(pairingCode);
     if (sent.length !== expected.length || !timingSafeEqual(sent, expected)) return reply.code(401).send({ error: "bad pairing code" });
   });
 
   app.get("/health", async () => ({ ok: true }));
+
+  const sayRaid = async (_req: unknown, reply: { type: (t: string) => { send: (b: string) => unknown } }) => reply.type("text/xml").send(twiml ? twiml() : "<Response></Response>");
+  app.get("/twiml/raid", sayRaid);
+  app.post("/twiml/raid", sayRaid);
 
   app.get<{ Querystring: { skip?: string } }>("/queue/next", async (req, reply) => {
     const item = service.queue.next(req.query.skip ? req.query.skip.split(",") : []);
@@ -91,6 +97,11 @@ export function buildApp({ service, pairingCode, transcriber, production }: AppO
   });
 
   if (!production) {
+    app.post("/dev/raid-test", async (_req, reply) => {
+      if (!raidTest) return reply.code(501).send({ error: "no alerter" });
+      await raidTest();
+      return { sent: true };
+    });
     app.post("/dev/seed", async () => {
       const base = Date.now();
       seeds.forEach((s, i) =>
