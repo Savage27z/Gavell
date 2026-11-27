@@ -25,11 +25,13 @@ Crypto community moderators are always on call. Scams arrive in bursts (fake sup
 | Double press | Ignore (for a scam wave, ignores every item in the wave) |
 | Swipe down | Next / skip |
 | Swipe up | Undo the last action, or the whole wave (valid 60 s) |
-| Long press | Voice command, e.g. "mute for a day", "ban and delete their last 10". The parsed command is shown and needs a press to confirm. |
+| Long press | Voice command, e.g. "mute for a day", "ban and delete their last 10", or "mute the wave" for the whole wave on the card. The parsed command is shown and needs a press to confirm. |
+
+Also built for real shifts (details and test status below): a raid alert to on-call moderators (Telegram DM and phone call), member reports by forwarding a scam DM, several moderators on one queue, a new-joiner label, a response-time ranking, a "since you were away" line, raid replay and opt-in night mode.
 
 Also: when several accounts post the same scam in one chat, the card shows WAVE xN and one press (or double press) acts on the whole wave, using the gentlest suggested action, and swipe up undoes it all. A NEW HIGH banner appears when more high-risk items arrive while you view a card, the card itself never changes under you, and the empty screen shows a shift summary. `GET /audit` lists every action.
 
-Nothing is ever moderated automatically. The server only acts when the glasses send an explicit action.
+Nothing is moderated automatically, with one opt-in exception. The server acts only when the glasses send an explicit action, unless an admin has switched on night mode for a group with /night on (off by default, see below). The raid alert only wakes people and never acts.
 
 ## Architecture
 
@@ -89,7 +91,7 @@ When 2 or more different accounts post the same high-risk scam in one group, Gav
 
 - **Telegram DM:** send /oncall to the bot in a private chat to opt in, /off to stop. A bot can only message you after you have started it.
 - **Phone call (optional):** set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM, ONCALL_PHONES (comma separated, +country format) and PUBLIC_URL (a URL Twilio can reach, for the spoken message). Twilio trial accounts can only call numbers you verified, play a trial notice first, and reject inline TwiML, which is why the message is fetched from PUBLIC_URL/twiml/raid. The endpoint only ever reads the last raid text and takes no input.
-- **Tested:** unit tests (threshold, distinct accounts, cooldown, failures in one channel). The threshold is 2 accounts by default and can be changed with RAID_THRESHOLD and one real Twilio test call to a verified number. Not tested: a real raid from three accounts, and whether a call wakes anyone at 3 a.m.
+- **Tested:** unit tests (threshold, distinct accounts, cooldown, failures in one channel). The threshold is 2 accounts by default and can be changed with RAID_THRESHOLD. Live: a real raid from two accounts in the test group sent the DM, and a Twilio trial call to a verified number was heard speaking the message (it first failed because the server rejected Twilio's form-encoded request, which is fixed). Not tested: a raid from three accounts, and whether a call wakes anyone at 3 a.m.
 - Local test: POST /dev/raid-test (non-production only) fires a labelled test alert.
 
 ## Member reports (forward a scam DM)
