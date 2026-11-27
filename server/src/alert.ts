@@ -20,7 +20,7 @@ export class RaidWatcher {
 
   constructor(
     private alerter: Alerter,
-    private threshold = 3,
+    private threshold = 2,
     private cooldownMs = 10 * 60_000,
     private now: () => number = Date.now,
   ) {}

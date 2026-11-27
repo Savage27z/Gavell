@@ -27,7 +27,7 @@ if (env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_FROM && phones
   parts.push(caller);
 }
 const alerter = new CompositeAlerter(parts);
-const watcher = new RaidWatcher(alerter, Number(env.RAID_THRESHOLD ?? 3));
+const watcher = new RaidWatcher(alerter, Number(env.RAID_THRESHOLD ?? 2));
 
 const service = new ModService(new ModQueue(env.DATA_FILE ?? "data/queue.json"), bot ? new GrammyGateway(bot) : null, refiner, Date.now, watcher);
 const moderators = Object.fromEntries(
@@ -54,7 +54,7 @@ if (bot) {
   bot.command("oncall", async (ctx) => {
     if (ctx.chat.type !== "private" || !ctx.from) return;
     onCall.add(ctx.from.id);
-    await ctx.reply("You are on call. I will message you when 3 or more accounts post the same scam. I never act on my own. Send /off to stop.");
+    await ctx.reply("You are on call. I will message you when 2 or more accounts post the same scam. I never act on my own. Send /off to stop.");
   });
   bot.command("off", async (ctx) => {
     if (ctx.chat.type !== "private" || !ctx.from) return;

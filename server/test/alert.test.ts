@@ -10,15 +10,15 @@ const item = (userId: number, over: Partial<StoredItem> = {}): StoredItem =>
 const wave = (n: number) => Array.from({ length: n }, (_, i) => item(i + 1));
 
 describe("raid alert", () => {
-  it("does not alert below 3 distinct accounts", () => {
+  it("does not alert for a single account", () => {
     const notify = vi.fn().mockResolvedValue(undefined);
-    expect(new RaidWatcher({ notify }).observe(item(2), wave(2))).toBe(false);
+    expect(new RaidWatcher({ notify }).observe(item(1), wave(1))).toBe(false);
     expect(notify).not.toHaveBeenCalled();
   });
 
   it("counts accounts, not messages from one account", () => {
     const notify = vi.fn().mockResolvedValue(undefined);
-    const same = [item(1), item(1, { id: "x" }), item(1, { id: "y" })];
+    const same = [item(1), item(1, { id: "x" }), item(1, { id: "y" })]; // one account, three messages
     expect(new RaidWatcher({ notify }).observe(same[0]!, same)).toBe(false);
   });
 
@@ -82,14 +82,14 @@ describe("raid alert", () => {
     expect(raidMessage({ chatId: 1, chatTitle: "T", accounts: 3, sample: "", test: true })).toContain("TEST ALERT");
   });
 
-  it("fires through ModService.ingest when 3 different accounts post the same scam", async () => {
+  it("fires through ModService.ingest when 2 different accounts post the same scam", async () => {
     const notify = vi.fn().mockResolvedValue(undefined);
     const service = new ModService(new ModQueue(), null, new NoopRefiner(), Date.now, new RaidWatcher({ notify }));
     for (const u of [1, 2, 3]) {
       await service.ingest({ chatId: -5, chatTitle: "Raid chat", userId: u, username: "u" + u, text: "Claim your airdrop now! Wallet connect required, verify your 12-word seed phrase at arb-claims.top/claim. Last chance", messageId: u });
     }
     expect(notify).toHaveBeenCalledTimes(1);
-    expect(notify.mock.calls[0]![0]).toMatchObject({ chatTitle: "Raid chat", accounts: 3 });
+    expect(notify.mock.calls[0]![0]).toMatchObject({ chatTitle: "Raid chat", accounts: 2 });
     expect(service.queue.stats().pending).toBe(3);
   });
 });
