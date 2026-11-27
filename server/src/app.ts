@@ -28,6 +28,8 @@ const actions: Action[] = ["ban", "mute", "ignore"];
 
 export function buildApp({ service, pairingCode, moderators = {}, transcriber, production, raidTest, twiml }: AppOptions) {
   const app = Fastify({ logger: false, bodyLimit: 10 * 1024 * 1024 });
+  // Twilio posts form-encoded call data to /twiml/raid. We never read it.
+  app.addContentTypeParser("application/x-www-form-urlencoded", { parseAs: "string" }, (_req, _body, done) => done(null, {}));
   app.register(cors, { origin: true, allowedHeaders: ["content-type", "x-pairing-code"] });
 
   app.addHook("onRequest", async (req, reply) => {
