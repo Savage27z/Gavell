@@ -110,6 +110,17 @@ Set MODERATORS=maya:code1,alex:code2 (name:pairing code, comma separated) and gi
 - **Audit:** every action records who did it (GET /audit has a by field), and GET /queue/stats has byModerator counts.
 - **Tested:** unit tests with two codes (separate cards, viewer line, lock expiry, simultaneous presses, audit and stats). Not tested: two real glasses at once, or a shift handoff screen (not built).
 
+## More for real-life shifts
+
+- **"Mute the wave" by voice.** Saying "mute the wave" or "ban all of them" applies the action to the whole wave on the card. The confirm screen says "whole wave (N users)". "mute for a day" still acts on one account. Tested: intent parsing and the confirm path. Not tested live in the simulator.
+- **New-joiner flag.** The bot notes when someone joins and marks their first flagged post within 24 hours as "NEW 12m" on the card. It only labels. It does not change the score. Tested in unit tests. Not tested with a live join.
+- **Moderator response ranking.** Every action stores how long the card waited. GET /moderators ranks moderators by median response time. Tested in unit tests.
+- **"Since you were away".** If a moderator opens the queue after 10 minutes or more, the first card starts with a line such as "Away 30m: 7 new, 5 handled (Maya 3), 1 raid. 2 left." Tested in unit tests.
+- **Raid replay.** Raids of 2 or more accounts are recorded. GET /raids, /raids/:id and a browser page at /raids/view?code=PAIRING_CODE show who posted first, when Gavel grouped them, and who acted and how fast. Tested in unit tests.
+- **Night mode (off by default, the only automatic action).** An admin sends /night on to the bot in a private chat. Only while no moderator has opened Gavel for 10 minutes, 3 or more accounts posting the same high-risk scam are muted for 60 minutes and their posts deleted. It never bans. A CONTAINED card shows who was muted. Swipe up restores them, and the bot re-posts "[restored by mods] @user said: ...". Restore works for 12 hours. Tested with mocks only. Not tested against live Telegram. Telegram leaves a restored user with all permissions switched on rather than their old ones.
+
+Not built: Business inbox, join warnings, a shared "banned elsewhere" list, chat lock, assigning cards to a moderator.
+
 ## Before and during the hackathon
 
 Started from a prototype built before the event. Commits after the first one in this repository were made during the hackathon.
@@ -123,6 +134,7 @@ Added during the event (commits after the first one):
 - Teamwork: named moderators, "Maya is on this", and a safe response when two press at once.
 - Member reports: forward a scam DM to the bot and it becomes a REPORTED card.
 - Raid alert: Telegram DM and optional Twilio call to on-call moderators when a wave of 2 or more accounts hits.
+- Voice "mute the wave", new-joiner flag, moderator response ranking, "since you were away" line, raid replay, and opt-in night mode (see above).
 
 Everything was tested in the simulator and a Telegram test group, not on real G2 glasses. The demo's voice command used a recorded phrase played into the simulator, and the wave shown is seeded demo data.
 

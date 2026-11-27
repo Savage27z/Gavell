@@ -19,7 +19,11 @@ A Telegram bot in your group reads messages. A rules classifier flags likely sca
 - **Scam waves:** when several accounts post the same scam, the card shows WAVE x4 and one press acts on all of them with the gentlest suggested action. Swipe up undoes the whole wave.
 - **Double press** ignores, **swipe down** skips, **swipe up** undoes within 60 seconds, **long press** takes a spoken command such as "mute for a day", shown for confirmation before it runs.
 - The queue refreshes on its own every 4 seconds. A NEW HIGH banner appears when more high-risk items arrive while you look at a card, and the card never changes under your thumb.
-- Nothing is ever moderated automatically. Every action is an explicit gesture or a confirmed voice command, and there is an audit log.
+- Nothing is moderated automatically unless an admin turns on night mode (/night on, off by default). Every other action is an explicit gesture or a confirmed voice command, and there is an audit log.
+- **Raid alert:** when 2 or more accounts post the same high-risk scam, on-call moderators get a Telegram DM and an optional phone call. The alert never acts.
+- **Member reports:** a member forwards a scam DM to the bot and it becomes a REPORTED card.
+- **Teamwork:** named moderators, "Maya is on this", and a safe response when two press at once.
+- **Also built:** "mute the wave" by voice, a new-joiner label, response-time ranking, a "since you were away" line, raid replay, and night mode (mutes 3 or more matching accounts for 60 minutes only while nobody has the queue open, never bans, restorable for 12 hours).
 
 ## Why glasses
 The decision is short and urgent, and a moderator on shift keeps their eyes up and hands free. One card, one suggested action and a few gestures fit a 576x288 green display.
@@ -29,6 +33,8 @@ The decision is short and urgent, and a moderator on shift keeps their eyes up a
 - Verified in the Even Hub simulator: the card, wave press and undo, double press, auto-refresh, the NEW HIGH banner and shift summary.
 - Verified end to end in the simulator: a recorded phrase ("mute for a day") played into a virtual microphone while holding Long Press, transcribed by Whisper (Groq), parsed, and shown on the confirm screen. A computer-generated phrase, not a person speaking into real glasses.
 - LLM check (OpenRouter, gpt-4o-mini): 10 of 10 scams and 0 false positives on a 20-message set that was also used for tuning, against 7 of 10 for rules alone. A smoke test, not an accuracy claim.
+- Unit-tested only (no live Telegram run yet): voice wave scope, new-joiner flag, response ranking, away line, raid replay and night mode.
+- Not built: Business inbox, join warnings, a shared banned-elsewhere list, chat lock, assigning cards.
 - Not verified: real G2 hardware, real speech from the glasses mic, and a real ban.
 
 ## Technical highlights
