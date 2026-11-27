@@ -99,7 +99,7 @@ The bot cannot read private chats between other people, so members can report a 
 - If the scammer hides forwarding, Telegram gives only a display name. That card is shown as hidden sender and can only be ignored, because there is no account to act on.
 - Reports are scored by the rules only (no LLM), and are never lower than medium, because a person reported them.
 - Nothing is acted on automatically. The group list is built from the groups the bot has seen messages in since it started; set MODERATED_CHATS (comma separated chat ids) to preload it after a restart.
-- **Tested:** unit tests (reporter check, rate limit, merging, hidden sender, no Telegram call before an explicit action). Not yet verified: a live forward from a second account, which I record in the demo notes when done.
+- **Tested:** unit tests (reporter check, rate limit, merging, hidden sender, no Telegram call before an explicit action), and live on a Telegram test group with two accounts: a forward from an account that hides its name became a hidden-sender card (ignore only), and a forward from a normal account became a REPORTED card whose mute worked and whose undo restored sending. Not tested: five different reporters, or a real ban.
 
 ## Before and during the hackathon
 
