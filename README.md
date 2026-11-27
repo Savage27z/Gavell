@@ -114,7 +114,7 @@ Set MODERATORS=maya:code1,alex:code2 (name:pairing code, comma separated) and gi
 
 ## More for real-life shifts
 
-- **"Mute the wave" by voice.** Saying "mute the wave" or "ban all of them" applies the action to the whole wave on the card. The confirm screen says "whole wave (N users)". "mute for a day" still acts on one account. Tested: intent parsing, and in the Even Hub simulator with a recorded phrase and a seeded wave of 4 (confirm screen said "whole wave (4 users)", one press muted all 4). Not tested with a real voice or real glasses.
+- **"Mute the wave" by voice.** Saying "mute the wave" or "ban all of them" applies the action to the whole wave on the card. The confirm screen says "whole wave (N users)". "mute for a day" still acts on one account. Tested: intent parsing, and in the Even Hub simulator with a recorded phrase, on a seeded wave of 4 and on a live wave of 2 accounts in the test group (confirm screen said "whole wave (4 users)", one press muted all 4). Not tested with a real voice or real glasses.
 - **New-joiner flag.** The bot notes when someone joins and marks their first flagged post within 24 hours as "NEW 12m" on the card. It only labels. It does not change the score. Tested live in the Telegram test group (the card showed NEW 0m after a rejoin).
 - **Moderator response ranking.** Every action stores how long the card waited. GET /moderators ranks moderators by median response time. Tested in unit tests.
 - **"Since you were away".** If a moderator opens the queue after 10 minutes or more, the first card starts with a line such as "Away 30m: 7 new, 5 handled (Maya 3), 1 raid. 2 left." Tested in unit tests only.
