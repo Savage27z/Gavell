@@ -130,6 +130,15 @@ describe("night mode", () => {
     expect(gateway!.muteChatMember).toHaveBeenCalledTimes(4);
     expect(queue.get(card.id)?.contained).toHaveLength(4);
   });
+  it("mutes each account once even if it posted several times", async () => {
+    const { service, queue, gateway } = await setupNight();
+    await service.ingest(msg(1));
+    await service.ingest(msg(1));
+    await service.ingest(msg(2));
+    await service.ingest(msg(3));
+    expect(gateway!.muteChatMember).toHaveBeenCalledTimes(3);
+    expect(queue.next()!.contained).toHaveLength(3);
+  });
   it("does nothing while a moderator is active", async () => {
     const { service, clock, gateway } = await setupNight();
     service.touch("Ann");

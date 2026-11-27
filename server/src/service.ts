@@ -187,9 +187,14 @@ export class ModService {
   }
 
   private async contain(members: StoredItem[]): Promise<void> {
-    const claimed = members.flatMap((m) => this.queue.claim(m.id) ?? []);
-    if (!claimed.length) return;
-    const req: ActionRequest = { action: "mute", muteMinutes: NIGHT_MUTE_MIN, deleteRecent: 1 };
+    const all = members.flatMap((m) => this.queue.claim(m.id) ?? []);
+    if (!all.length) return;
+    // One action per account: the newest card carries it, older cards of the same account are closed with it.
+    const byUser = new Map<number, StoredItem[]>();
+    for (const c of all) byUser.set(c.userId, [...(byUser.get(c.userId) ?? []), c]);
+    const claimed = [...byUser.values()].map((cards) => cards[cards.length - 1]!);
+    for (const cards of byUser.values()) for (const extra of cards.slice(0, -1)) this.queue.commit(extra.id, { action: "mute", muteMinutes: NIGHT_MUTE_MIN, waveSize: claimed.length, by: "night mode" });
+    const req: ActionRequest = { action: "mute", muteMinutes: NIGHT_MUTE_MIN, deleteRecent: 10 };
     const results = await Promise.allSettled(claimed.map((c) => this.process(c, req, claimed.length, "night mode", { ttl: NIGHT_UNDO_MS, night: true })));
     const done: { item: StoredItem; token: string }[] = [];
     results.forEach((r, i) => {
