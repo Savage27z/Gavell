@@ -14,6 +14,7 @@ interface Persisted {
   audit?: AuditEntry[];
   raids?: RaidRecord[];
   night?: number[];
+  joins?: Record<string, number>;
 }
 
 export class ModQueue {
@@ -24,6 +25,7 @@ export class ModQueue {
   private audit: AuditEntry[] = [];
   private raids: RaidRecord[] = [];
   private night = new Set<number>();
+  private joins = new Map<string, number>();
 
   constructor(private file?: string) {
     if (file && existsSync(file)) {
@@ -34,6 +36,7 @@ export class ModQueue {
       this.audit = data.audit ?? [];
       this.raids = data.raids ?? [];
       this.night = new Set(data.night ?? []);
+      this.joins = new Map(Object.entries(data.joins ?? {}));
     }
   }
 
@@ -139,6 +142,16 @@ export class ModQueue {
     this.save();
   }
 
+  setJoin(key: string, at: number): void {
+    this.joins.set(key, at);
+    for (const [k, t] of this.joins) if (at - t > 7 * 86_400_000) this.joins.delete(k);
+    this.save();
+  }
+
+  joinedAt(key: string): number | undefined {
+    return this.joins.get(key);
+  }
+
   isNight(chatId: number): boolean {
     return this.night.has(chatId);
   }
@@ -239,6 +252,6 @@ export class ModQueue {
   private save() {
     if (!this.file) return;
     mkdirSync(dirname(this.file), { recursive: true });
-    writeFileSync(this.file, JSON.stringify({ pending: [...this.pending, ...this.claimed.values()], handled: this.handled, offenses: Object.fromEntries(this.offenses), audit: this.audit, raids: this.raids, night: [...this.night] } satisfies Persisted));
+    writeFileSync(this.file, JSON.stringify({ pending: [...this.pending, ...this.claimed.values()], handled: this.handled, offenses: Object.fromEntries(this.offenses), audit: this.audit, raids: this.raids, night: [...this.night], joins: Object.fromEntries(this.joins) } satisfies Persisted));
   }
 }

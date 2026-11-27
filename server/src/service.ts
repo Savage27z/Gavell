@@ -14,8 +14,8 @@ const REPORT_LIMIT = 5;
 const REPORT_WINDOW_MS = 10 * 60_000;
 const JOIN_WINDOW_MS = 24 * 60 * 60_000;
 const AWAY_MS = 10 * 60_000;
-const NIGHT_IDLE_MS = 10 * 60_000;
-const NIGHT_THRESHOLD = 3;
+const NIGHT_IDLE_MS = Number(process.env.NIGHT_IDLE_MIN ?? 10) * 60_000;
+const NIGHT_THRESHOLD = Number(process.env.NIGHT_THRESHOLD ?? 3);
 const NIGHT_MUTE_MIN = 60;
 const NIGHT_UNDO_MS = 12 * 60 * 60_000;
 const NIGHT_REPEAT_MS = 60 * 60_000;
@@ -48,7 +48,6 @@ export class ModService {
   private reporters = new Map<string, Set<number>>();
   private viewing = new Map<string, { by: string; until: number }>();
   private handled = new Map<string, string>();
-  private joins = new Map<string, number>();
   private seen = new Map<string, number>();
   private lastOpen = 0;
   private nightCards = new Map<string, string[]>();
@@ -145,7 +144,7 @@ export class ModService {
   }
 
   noteJoin(chatId: number, userId: number): void {
-    this.joins.set(chatId + ":" + userId, this.now());
+    this.queue.setJoin(chatId + ":" + userId, this.now());
   }
 
   /** A moderator opened the queue. Returns a one-line summary when they were away for a while. */
@@ -235,7 +234,7 @@ export class ModService {
     if (verdict.score < this.refiner.minScore) return null;
     verdict = await this.refiner.refine(msg.text, verdict);
     if (verdict.score < FLAG_THRESHOLD) return null;
-    const joined = this.joins.get(key);
+    const joined = this.queue.joinedAt(key);
     const joinedMinAgo = joined !== undefined && this.now() - joined < JOIN_WINDOW_MS ? Math.max(0, Math.round((this.now() - joined) / 60_000)) : undefined;
     const added = this.queue.add({
       chatId: msg.chatId,
