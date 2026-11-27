@@ -26,6 +26,7 @@ export interface ActionRequest {
   action: Action;
   deleteRecent?: number;
   muteMinutes?: number;
+  wave?: boolean;
 }
 
 export interface ActionResult {

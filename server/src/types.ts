@@ -59,4 +59,6 @@ export interface ActionRequest {
   action: Action;
   deleteRecent?: number;
   muteMinutes?: number;
+  /** Voice scope: apply to the whole wave on the card. */
+  wave?: boolean;
 }

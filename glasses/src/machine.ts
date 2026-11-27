@@ -240,7 +240,10 @@ export function reduce(state: State, msg: Msg): Step {
 
     case "confirm":
       if (msg.type !== "gesture") return { state, effect: NONE };
-      if (msg.gesture === "press" && state.request) return act({ ...state, phase: "card", request: null }, state.request);
+      if (msg.gesture === "press" && state.request) {
+        const { wave, ...req } = state.request;
+        return act({ ...state, phase: "card", request: null }, req, !!wave && (state.item?.waveSize ?? 1) > 1);
+      }
       if (msg.gesture === "swipeDown" || msg.gesture === "doublePress") return { state: { ...state, phase: "card", request: null }, effect: NONE };
       return { state, effect: NONE };
 

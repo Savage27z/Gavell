@@ -23,6 +23,13 @@ function parseDurationMinutes(text: string): number | undefined {
 }
 
 export function parseIntent(raw: string): ActionRequest | null {
+  const base = parseBase(raw);
+  if (!base || base.action === "ignore") return base;
+  const t = raw.toLowerCase();
+  return /\b(the|whole|entire)\s+(wave|raid)\b|\b(all|every)\s+(of\s+)?(them|accounts|users)\b|\beveryone\b|\bthem all\b/.test(t) ? { ...base, wave: true } : base;
+}
+
+function parseBase(raw: string): ActionRequest | null {
   const text = raw.toLowerCase().replace(/[.,!?]/g, " ");
   const isBan = /\b(ban|kick|remove|block|nuke|boot)\b/.test(text);
   const isMute = /\b(mute|silence|timeout|time out|restrict)\b/.test(text);

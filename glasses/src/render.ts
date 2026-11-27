@@ -62,7 +62,7 @@ export function renderScreen(state: State): Screen {
     case "confirm":
       return {
         header: "CONFIRM?",
-        body: [describeAction(state.request ?? { action: "ignore" }), state.item ? `@${state.item.username ?? state.item.userId}: "${truncate(state.item.text, 60)}"` : ""].join("\n"),
+        body: [describeAction(state.request ?? { action: "ignore" }) + (state.request?.wave && (state.item?.waveSize ?? 1) > 1 ? " - whole wave (" + state.item!.waveSize + " users)" : ""), state.item ? `@${state.item.username ?? state.item.userId}: "${truncate(state.item.text, 60)}"` : ""].join("\n"),
         footer: "Press yes | Dn cancel",
       };
     case "toast":
