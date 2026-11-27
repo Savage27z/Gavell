@@ -256,3 +256,10 @@ describe("report cards", () => {
   });
 });
 
+
+describe("teamwork card", () => {
+  it("shows who else is on the card", () => {
+    const it: FlaggedItem = { ...item, viewedBy: "Maya" };
+    expect(renderScreen({ ...initialState("c"), phase: "card", item: it, pending: 2 }).body).toContain("Maya is on this");
+  });
+});

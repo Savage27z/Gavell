@@ -23,6 +23,7 @@ function cardBody(item: FlaggedItem): string {
     lines.push(`Wave acts gently. This one alone: ${shortAction(item.ownSuggested)}`);
   }
   if (item.userId === 0) lines.push("Sender hidden: cannot act, ignore only");
+  if (item.viewedBy) lines.push(`${item.viewedBy} is on this`);
   return lines.join("\n");
 }
 

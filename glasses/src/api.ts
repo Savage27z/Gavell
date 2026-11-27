@@ -45,6 +45,10 @@ export class HttpClient implements QueueClient {
     }
     if (response.status === 501) throw new ApiError("Voice not set up on server", 501);
     if (response.status === 401 || response.status === 403) throw new ApiError("Wrong pairing code", response.status);
+    if (response.status === 409) {
+      const by = ((await response.json().catch(() => ({}))) as { by?: string }).by;
+      throw new ApiError(by ? `Already handled by ${by}` : "Already handled", 409);
+    }
     if (!response.ok && response.status !== 204) throw new ApiError(`Server error ${response.status}`, response.status);
     return response;
   }

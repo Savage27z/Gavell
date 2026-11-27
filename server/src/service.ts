@@ -37,6 +37,8 @@ export class ModService {
   private chats = new Map<number, string>();
   private reportLog = new Map<number, number[]>();
   private reporters = new Map<string, Set<number>>();
+  private viewing = new Map<string, { by: string; until: number }>();
+  private handled = new Map<string, string>();
 
   constructor(
     readonly queue: ModQueue,
@@ -45,6 +47,25 @@ export class ModService {
     private now: () => number = Date.now,
     private watcher?: RaidWatcher,
   ) {}
+
+  /** Soft lock: a card a moderator opened in the last 30 s is shown to others only when nothing else is left. */
+  lockedByOthers(name: string): string[] {
+    const now = this.now();
+    return [...this.viewing.entries()].filter(([, v]) => v.by !== name && v.until > now).map(([id]) => id);
+  }
+
+  viewedBy(id: string, name: string): string | undefined {
+    const v = this.viewing.get(id);
+    return v && v.by !== name && v.until > this.now() ? v.by : undefined;
+  }
+
+  markViewing(id: string, name: string): void {
+    if (!this.viewedBy(id, name)) this.viewing.set(id, { by: name, until: this.now() + 30_000 });
+  }
+
+  handledBy(id: string): string | undefined {
+    return this.handled.get(id);
+  }
 
   noteChat(chatId: number, title: string): void {
     this.chats.set(chatId, title);
@@ -143,20 +164,24 @@ export class ModService {
     return run;
   }
 
-  async act(id: string, req: ActionRequest): Promise<{ undoToken: string } | null> {
+  async act(id: string, req: ActionRequest, by?: string): Promise<{ undoToken: string } | null> {
     const item = this.queue.claim(id);
-    return item ? this.process(item, req, 1) : null;
+    if (!item) return null;
+    if (by) this.handled.set(id, by);
+    return this.process(item, req, 1, by);
   }
 
-  async actWave(id: string, req: ActionRequest): Promise<{ undoTokens: string[]; failed: number } | null> {
+  async actWave(id: string, req: ActionRequest, by?: string): Promise<{ undoTokens: string[]; failed: number } | null> {
     const members = this.queue.wave(id).flatMap((m) => this.queue.claim(m.id) ?? []);
     if (!members.length) return null;
-    const results = await Promise.allSettled(members.map((m) => this.process(m, req, members.length)));
+    if (by) for (const m of members) this.handled.set(m.id, by);
+    if (by) this.handled.set(id, by);
+    const results = await Promise.allSettled(members.map((m) => this.process(m, req, members.length, by)));
     const undoTokens = results.flatMap((r) => (r.status === "fulfilled" ? [r.value.undoToken] : []));
     return { undoTokens, failed: results.length - undoTokens.length };
   }
 
-  private async process(item: StoredItem, req: ActionRequest, waveSize: number): Promise<{ undoToken: string }> {
+  private async process(item: StoredItem, req: ActionRequest, waveSize: number, by?: string): Promise<{ undoToken: string }> {
     const key = `${item.chatId}:${item.userId}`;
     try {
       return await this.serialize(key, async () => {
@@ -174,7 +199,7 @@ export class ModService {
             await Promise.allSettled([...toDelete].map((m) => this.tg!.deleteMessage(item.chatId, m)));
           }
         }
-        this.queue.commit(item.id, { action: req.action, muteMinutes: req.muteMinutes, deleteRecent: req.deleteRecent, waveSize });
+        this.queue.commit(item.id, { action: req.action, muteMinutes: req.muteMinutes, deleteRecent: req.deleteRecent, waveSize, by });
         const undoToken = randomUUID();
         const version = (this.versions.get(key) ?? 0) + 1;
         this.versions.set(key, version);

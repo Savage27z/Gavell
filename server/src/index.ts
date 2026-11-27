@@ -30,9 +30,17 @@ const alerter = new CompositeAlerter(parts);
 const watcher = new RaidWatcher(alerter, Number(env.RAID_THRESHOLD ?? 3));
 
 const service = new ModService(new ModQueue(env.DATA_FILE ?? "data/queue.json"), bot ? new GrammyGateway(bot) : null, refiner, Date.now, watcher);
+const moderators = Object.fromEntries(
+  (env.MODERATORS ?? "")
+    .split(",")
+    .map((pair) => pair.split(":").map((x) => x.trim()))
+    .filter((p): p is [string, string] => p.length === 2 && Boolean(p[0]) && Boolean(p[1]))
+    .map(([name, code]) => [code, name]),
+);
 const app = buildApp({
   service,
   pairingCode: env.PAIRING_CODE ?? "demo",
+  moderators,
   transcriber,
   production: env.NODE_ENV === "production",
   twiml: () => caller?.twiml() ?? "<Response></Response>",

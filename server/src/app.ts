@@ -7,9 +7,17 @@ import type { ModService } from "./service.js";
 import type { Transcriber } from "./stt.js";
 import type { Action } from "./types.js";
 
+declare module "fastify" {
+  interface FastifyRequest {
+    moderator: string;
+  }
+}
+
 export interface AppOptions {
   service: ModService;
   pairingCode: string;
+  /** Extra pairing codes, one per named moderator: { code: "Maya" }. */
+  moderators?: Record<string, string>;
   transcriber: Transcriber | null;
   production: boolean;
   raidTest?: () => Promise<void>;
@@ -18,26 +26,40 @@ export interface AppOptions {
 
 const actions: Action[] = ["ban", "mute", "ignore"];
 
-export function buildApp({ service, pairingCode, transcriber, production, raidTest, twiml }: AppOptions) {
+export function buildApp({ service, pairingCode, moderators = {}, transcriber, production, raidTest, twiml }: AppOptions) {
   const app = Fastify({ logger: false, bodyLimit: 10 * 1024 * 1024 });
   app.register(cors, { origin: true, allowedHeaders: ["content-type", "x-pairing-code"] });
 
   app.addHook("onRequest", async (req, reply) => {
     if (req.method === "OPTIONS" || req.url === "/health" || req.url.split("?")[0] === "/twiml/raid") return;
     const sent = Buffer.from(String(req.headers["x-pairing-code"] ?? ""));
-    const expected = Buffer.from(pairingCode);
-    if (sent.length !== expected.length || !timingSafeEqual(sent, expected)) return reply.code(401).send({ error: "bad pairing code" });
+    const codes: [string, string][] = [[pairingCode, "moderator"], ...Object.entries(moderators)];
+    const hit = codes.find(([code]) => {
+      const expected = Buffer.from(code);
+      return sent.length === expected.length && timingSafeEqual(sent, expected);
+    });
+    if (!hit) return reply.code(401).send({ error: "bad pairing code" });
+    req.moderator = hit[1];
   });
 
   app.get("/health", async () => ({ ok: true }));
+
+  const gone = (id: string, reply: { code: (n: number) => { send: (b: unknown) => unknown } }) => {
+    const by = service.handledBy(id);
+    return by ? reply.code(409).send({ error: "already handled", by }) : reply.code(404).send({ error: "not found" });
+  };
 
   const sayRaid = async (_req: unknown, reply: { type: (t: string) => { send: (b: string) => unknown } }) => reply.type("text/xml").send(twiml ? twiml() : "<Response></Response>");
   app.get("/twiml/raid", sayRaid);
   app.post("/twiml/raid", sayRaid);
 
   app.get<{ Querystring: { skip?: string } }>("/queue/next", async (req, reply) => {
-    const item = service.queue.next(req.query.skip ? req.query.skip.split(",") : []);
-    return item ?? reply.code(204).send();
+    const skip = [...(req.query.skip ? req.query.skip.split(",") : []), ...service.lockedByOthers(req.moderator)];
+    const item = service.queue.next(skip);
+    if (!item) return reply.code(204).send();
+    const viewedBy = service.viewedBy(item.id, req.moderator);
+    service.markViewing(item.id, req.moderator);
+    return viewedBy ? { ...item, viewedBy } : item;
   });
 
   app.get("/queue/stats", async () => ({ ...service.queue.stats(), ...service.queue.shiftStats(), high: service.queue.pendingHigh() }));
@@ -52,14 +74,14 @@ export function buildApp({ service, pairingCode, transcriber, production, raidTe
       const request = { action, deleteRecent, muteMinutes };
       try {
         if (wave) {
-          const result = await service.actWave(req.params.id, request);
-          if (!result) return reply.code(404).send({ error: "not found" });
+          const result = await service.actWave(req.params.id, request, req.moderator);
+          if (!result) return gone(req.params.id, reply);
           const { undoTokens, failed } = result;
           if (!undoTokens.length) return reply.code(502).send({ error: "telegram failed", ok: false, applied: 0, failed });
           return { ok: failed === 0, applied: undoTokens.length, failed, undoToken: undoTokens[0], undoTokens };
         }
-        const result = await service.act(req.params.id, request);
-        if (!result) return reply.code(404).send({ error: "not found" });
+        const result = await service.act(req.params.id, request, req.moderator);
+        if (!result) return gone(req.params.id, reply);
         return { ok: true, undoToken: result.undoToken };
       } catch (err) {
         return reply.code(502).send({ error: "telegram failed", detail: err instanceof Error ? err.message : "unknown" });

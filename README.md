@@ -101,6 +101,15 @@ The bot cannot read private chats between other people, so members can report a 
 - Nothing is acted on automatically. The group list is built from the groups the bot has seen messages in since it started; set MODERATED_CHATS (comma separated chat ids) to preload it after a restart.
 - **Tested:** unit tests (reporter check, rate limit, merging, hidden sender, no Telegram call before an explicit action), and live on a Telegram test group with two accounts: a forward from an account that hides its name became a hidden-sender card (ignore only), and a forward from a normal account became a REPORTED card whose mute worked and whose undo restored sending. Not tested: five different reporters, or a real ban.
 
+## Teamwork (several moderators, one queue)
+
+Set MODERATORS=maya:code1,alex:code2 (name:pairing code, comma separated) and give each moderator their own code in the glasses app. PAIRING_CODE keeps working as a generic moderator.
+
+- **Who is on it:** a card a moderator opened in the last 30 seconds is skipped for the others. If it is the only card left, they still see it with a line "Maya is on this". The lock expires by itself, so a moderator who dozes off never blocks the queue.
+- **Safe at the same time:** an item is claimed before any action runs. If two moderators press at once, exactly one acts and the other gets "Already handled by Maya" instead of an error.
+- **Audit:** every action records who did it (GET /audit has a by field), and GET /queue/stats has byModerator counts.
+- **Tested:** unit tests with two codes (separate cards, viewer line, lock expiry, simultaneous presses, audit and stats). Not tested: two real glasses at once, or a shift handoff screen (not built).
+
 ## Before and during the hackathon
 
 Started from a prototype built before the event. Commits after the first one in this repository were made during the hackathon.
@@ -111,6 +120,7 @@ Added during the event (commits after the first one):
 - Fixed the score direction in the LLM prompt, added Groq and OpenRouter configuration, and a 2.5 s LLM timeout so the queue never stalls.
 - A privacy note, and rewritten submission text and demo script that match the code.
 - Logo, and a recorded demo using the Even Hub simulator.
+- Teamwork: named moderators, "Maya is on this", and a safe response when two press at once.
 - Member reports: forward a scam DM to the bot and it becomes a REPORTED card.
 - Raid alert: Telegram DM and optional Twilio call to on-call moderators when a wave of 3 or more accounts hits.
 

@@ -130,7 +130,9 @@ export class ModQueue {
   shiftStats() {
     const live = this.audit.filter((e) => !e.undone);
     const count = (action: AuditEntry["action"]) => live.filter((e) => e.action === action).length;
-    return { muted: count("mute"), banned: count("ban"), ignored: count("ignore"), undone: this.audit.length - live.length };
+    const byModerator: Record<string, number> = {};
+    for (const e of live) if (e.by) byModerator[e.by] = (byModerator[e.by] ?? 0) + 1;
+    return { muted: count("mute"), banned: count("ban"), ignored: count("ignore"), undone: this.audit.length - live.length, ...(Object.keys(byModerator).length ? { byModerator } : {}) };
   }
 
   auditLog(limit = 50): AuditEntry[] {

@@ -36,6 +36,7 @@ export interface AuditEntry {
   deleteRecent?: number;
   waveSize: number;
   undone: boolean;
+  by?: string;
 }
 
 export interface Verdict {

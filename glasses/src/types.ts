@@ -19,6 +19,7 @@ export interface FlaggedItem {
   waveSize: number;
   source?: "report";
   reports?: number;
+  viewedBy?: string;
 }
 
 export interface ActionRequest {
