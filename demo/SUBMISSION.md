@@ -33,7 +33,7 @@ The decision is short and urgent, and a moderator on shift keeps their eyes up a
 - Verified in the Even Hub simulator: the card, wave press and undo, double press, auto-refresh, the NEW HIGH banner and shift summary.
 - Verified end to end in the simulator: a recorded phrase ("mute for a day") played into a virtual microphone while holding Long Press, transcribed by Whisper (Groq), parsed, and shown on the confirm screen. A computer-generated phrase, not a person speaking into real glasses.
 - LLM check (OpenRouter, gpt-4o-mini): 10 of 10 scams and 0 false positives on a 20-message set that was also used for tuning, against 7 of 10 for rules alone. A smoke test, not an accuracy claim.
-- Unit-tested only (no live Telegram run yet): voice wave scope, new-joiner flag, response ranking, away line, raid replay and night mode.
+- Tested live in the Telegram test group: new-joiner flag, raid alert (DM and a spoken call to one phone), raid replay, night mode (threshold lowered to 2 for the test) with restore. Tested in the simulator with a recorded phrase: "mute the wave" on a seeded wave of 4. Unit-tested only: response ranking (also seen on seeded data) and the away line.
 - Not built: Business inbox, join warnings, a shared banned-elsewhere list, chat lock, assigning cards.
 - Not verified: real G2 hardware, real speech from the glasses mic, and a real ban.
 
