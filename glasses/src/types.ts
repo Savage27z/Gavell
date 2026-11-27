@@ -17,8 +17,12 @@ export interface FlaggedItem {
   suggested: ActionRequest;
   ownSuggested: ActionRequest;
   waveSize: number;
-  source?: "report";
+  source?: "report" | "night";
   reports?: number;
+  joinedMinAgo?: number;
+  contained?: string[];
+  away?: string;
+  nightUndo?: string[];
   viewedBy?: string;
 }
 

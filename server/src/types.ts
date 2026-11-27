@@ -19,8 +19,21 @@ export interface FlaggedItem {
   ownSuggested: ActionRequest;
   demo?: boolean;
   /** Set when a member forwarded a scam DM to the bot. */
-  source?: "report";
+  source?: "report" | "night";
   reports?: number;
+  /** Minutes since the sender joined, when they joined in the last 24 h. */
+  joinedMinAgo?: number;
+  /** Night-mode card: the accounts that were contained. */
+  contained?: string[];
+}
+
+export interface RaidRecord {
+  id: string;
+  chatId: number;
+  chatTitle: string;
+  sample: string;
+  startedAt: string;
+  members: { userId: number; username: string | null; at: string }[];
 }
 
 export type StoredItem = Omit<FlaggedItem, "waveSize" | "ownSuggested">;
@@ -37,6 +50,8 @@ export interface AuditEntry {
   waveSize: number;
   undone: boolean;
   by?: string;
+  flaggedAt?: string;
+  responseMs?: number;
 }
 
 export interface Verdict {

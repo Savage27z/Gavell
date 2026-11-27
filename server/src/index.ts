@@ -60,6 +60,23 @@ if (bot) {
     if (ctx.chat.type !== "private" || !ctx.from) return;
     await ctx.reply(onCall.remove(ctx.from.id) ? "Okay, you are off call." : "You were not on call.");
   });
+  bot.command("night", async (ctx) => {
+    if (ctx.chat.type !== "private" || !ctx.from) return;
+    const arg = ctx.match.trim().toLowerCase();
+    if (arg !== "on" && arg !== "off") {
+      await ctx.reply("Night mode is off by default. /night on turns it on for the groups where you are an admin. /night off turns it off. When on, and only while no moderator has opened Gavel for 10 minutes, 3 or more accounts posting the same high-risk scam are muted for 60 minutes and their posts deleted. Never bans. You can restore them from Gavel.");
+      return;
+    }
+    const titles = await service.setNight(ctx.from.id, arg === "on");
+    await ctx.reply(titles.length ? "Night mode " + arg + " for: " + titles.join(", ") + "." : "I found no group where you are an admin.");
+  });
+  bot.on("message:new_chat_members", async (ctx) => {
+    for (const m of ctx.message.new_chat_members) if (!m.is_bot) service.noteJoin(ctx.chat.id, m.id);
+  });
+  bot.on("chat_member", async (ctx) => {
+    const u = ctx.chatMember;
+    if (["left", "kicked"].includes(u.old_chat_member.status) && u.new_chat_member.status === "member") service.noteJoin(ctx.chat.id, u.new_chat_member.user.id);
+  });
   bot.on("message:text", async (ctx) => {
     const chat = ctx.chat;
     if (!ctx.from || ctx.from.is_bot) return;
@@ -99,7 +116,7 @@ if (bot) {
     });
   });
   bot.catch(() => {});
-  void bot.start({ allowed_updates: ["message"] });
+  void bot.start({ allowed_updates: ["message", "chat_member"] });
 }
 
 await app.listen({ port: Number(env.PORT ?? 8787), host: "0.0.0.0" });

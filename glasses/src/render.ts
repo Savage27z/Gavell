@@ -16,9 +16,13 @@ export function truncate(text: string, max: number): string {
 }
 
 function cardBody(item: FlaggedItem): string {
+  if (item.source === "night") {
+    const who = (item.contained ?? []).slice(0, 4).join(", ");
+    return [item.away, "Night mode muted " + (item.contained?.length ?? 0) + " accounts for 60 min", who, "> " + truncate(item.reason, 60)].filter(Boolean).join("\n");
+  }
   const name = item.userId === 0 ? (item.username ? `${item.username} (hidden)` : "hidden sender") : item.username ? `@${item.username}` : `user ${item.userId}`;
   const repeat = item.offenses > 1 ? ` | #${item.offenses} offense` : "";
-  const lines = [`${name} in ${truncate(item.chatTitle, 20)}${repeat}`, `"${truncate(item.text, BODY_CHARS)}"`, `> ${truncate(item.reason, 60)}`];
+  const lines = [...(item.away ? [item.away] : []), `${name} in ${truncate(item.chatTitle, 20)}${repeat}`, `"${truncate(item.text, BODY_CHARS)}"`, `> ${truncate(item.reason, 60)}`];
   if (item.waveSize > 1 && shortAction(item.ownSuggested) !== shortAction(item.suggested)) {
     lines.push(`Wave acts gently. This one alone: ${shortAction(item.ownSuggested)}`);
   }
@@ -30,6 +34,8 @@ function cardBody(item: FlaggedItem): string {
 function cardHeader(state: State, item: FlaggedItem): string {
   const parts = [BADGE[item.risk]];
   if (state.alert) return `${parts[0]}   NEW HIGH - Dn to view`;
+  if (item.source === "night") parts.push("CONTAINED x" + (item.contained?.length ?? 0));
+  if (item.joinedMinAgo !== undefined) parts.push("NEW " + item.joinedMinAgo + "m");
   if (item.waveSize > 1) parts.push(`WAVE x${item.waveSize}`);
   if (item.source === "report") parts.push((item.reports ?? 1) > 1 ? `REPORTED x${item.reports}` : "REPORTED");
   parts.push(`${state.pending} pending`);
@@ -37,6 +43,7 @@ function cardHeader(state: State, item: FlaggedItem): string {
 }
 
 function cardFooter(item: FlaggedItem): string {
+  if (item.source === "night") return "Press keep | Up restore all | Dn skip";
   if (item.waveSize > 1) return `Press ${shortAction(item.suggested)} x${item.waveSize} | 2x ignore x${item.waveSize} | Dn skip | Up undo`;
   return `Press ${shortAction(item.suggested)} | 2x ignore | Dn skip | Up undo | Hold voice`;
 }

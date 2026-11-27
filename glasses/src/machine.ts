@@ -187,7 +187,7 @@ export function reduce(state: State, msg: Msg): Step {
       if (!msg.item) {
         return { state: { ...state, phase: "empty", item: null, pending: 0, skipped: [], alert: false, shift: msg.shift ?? null, knownHigh: msg.high ?? 0 }, effect: NONE };
       }
-      return { state: { ...state, phase: "card", item: msg.item, pending: msg.pending, alert: false, shift: msg.shift ?? state.shift, knownHigh: msg.high ?? state.knownHigh }, effect: NONE };
+      return { state: { ...state, phase: "card", item: msg.item, undoTokens: msg.item.nightUndo ?? state.undoTokens, pending: msg.pending, alert: false, shift: msg.shift ?? state.shift, knownHigh: msg.high ?? state.knownHigh }, effect: NONE };
 
     case "card":
       return msg.type === "gesture" ? onCardGesture(state, msg.gesture) : { state, effect: NONE };

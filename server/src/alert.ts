@@ -8,6 +8,8 @@ export interface Raid {
   accounts: number;
   sample: string;
   test?: boolean;
+  /** Night mode already muted them. */
+  night?: boolean;
 }
 
 export interface Alerter {
@@ -25,7 +27,7 @@ export class RaidWatcher {
     private now: () => number = Date.now,
   ) {}
 
-  observe(item: StoredItem, wave: StoredItem[]): boolean {
+  observe(item: StoredItem, wave: StoredItem[], night = false): boolean {
     if (item.demo || item.risk !== "high") return false;
     const accounts = new Set(wave.map((m) => m.userId)).size;
     if (accounts < this.threshold) return false;
@@ -33,7 +35,7 @@ export class RaidWatcher {
     const prev = this.last.get(item.chatId);
     if (prev !== undefined && t - prev < this.cooldownMs) return false;
     this.last.set(item.chatId, t);
-    void this.alerter.notify({ chatId: item.chatId, chatTitle: item.chatTitle, accounts, sample: item.text.slice(0, 120) }).catch(() => {});
+    void this.alerter.notify({ chatId: item.chatId, chatTitle: item.chatTitle, accounts, sample: item.text.slice(0, 120), ...(night ? { night } : {}) }).catch(() => {});
     return true;
   }
 }
@@ -69,7 +71,7 @@ export class OnCallRegistry {
 
 export function raidMessage(r: Raid): string {
   const lead = r.test ? "TEST ALERT (nothing is happening). " : "";
-  return lead + "Gavel: raid in progress in " + r.chatTitle + ". " + r.accounts + " accounts posted the same scam. Open Gavel to review. Nothing has been actioned.";
+  return lead + "Gavel: raid in progress in " + r.chatTitle + ". " + r.accounts + " accounts posted the same scam. " + (r.night ? "Night mode muted them for 60 minutes and deleted their posts. Open Gavel to review or restore." : "Open Gavel to review. Nothing has been actioned.");
 }
 
 export class TelegramDmAlerter implements Alerter {
