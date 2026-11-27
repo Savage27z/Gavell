@@ -18,6 +18,9 @@ export interface FlaggedItem {
   suggested: ActionRequest;
   ownSuggested: ActionRequest;
   demo?: boolean;
+  /** Set when a member forwarded a scam DM to the bot. */
+  source?: "report";
+  reports?: number;
 }
 
 export type StoredItem = Omit<FlaggedItem, "waveSize" | "ownSuggested">;

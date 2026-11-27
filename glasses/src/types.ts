@@ -17,6 +17,8 @@ export interface FlaggedItem {
   suggested: ActionRequest;
   ownSuggested: ActionRequest;
   waveSize: number;
+  source?: "report";
+  reports?: number;
 }
 
 export interface ActionRequest {

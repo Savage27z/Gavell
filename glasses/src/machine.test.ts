@@ -236,3 +236,23 @@ describe("machine", () => {
     });
   });
 });
+
+
+describe("report cards", () => {
+  const base: FlaggedItem = { ...item, userId: 99, username: "evil", risk: "medium", reason: "Reported: Fake support", source: "report", reports: 5, suggested: { action: "mute", muteMinutes: 1440 }, ownSuggested: { action: "mute", muteMinutes: 1440 } };
+  const cardOf = (it: FlaggedItem): State => ({ ...initialState("c"), phase: "card", item: it, pending: 3 });
+
+  it("shows REPORTED xN in the header", () => {
+    expect(renderScreen(cardOf(base)).header).toContain("REPORTED x5");
+  });
+
+  it("says when the sender is hidden and offers ignore only", () => {
+    const hidden: FlaggedItem = { ...base, userId: 0, username: "Support Team", reports: 1, suggested: { action: "ignore" }, ownSuggested: { action: "ignore" } };
+    const screen = renderScreen(cardOf(hidden));
+    expect(screen.header).toContain("REPORTED");
+    expect(screen.body).toContain("Support Team (hidden)");
+    expect(screen.body).toContain("cannot act");
+    expect(screen.footer).toContain("Press ignore");
+  });
+});
+

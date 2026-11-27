@@ -92,6 +92,15 @@ When 3 or more different accounts post the same high-risk scam in one group, Gav
 - **Tested:** unit tests (threshold, distinct accounts, cooldown, failures in one channel) and one real Twilio test call to a verified number. Not tested: a real raid from three accounts, and whether a call wakes anyone at 3 a.m.
 - Local test: POST /dev/raid-test (non-production only) fires a labelled test alert.
 
+## Member reports (forward a scam DM)
+
+The bot cannot read private chats between other people, so members can report a DM instead: forward it to the bot in a private chat. The bot checks that the reporter is a member of a group it moderates, allows at most 5 reports per reporter per 10 minutes, and queues the message as a REPORTED card (REPORTED x5 when five members report the same sender). One card is created for each moderated group the scammer is in, so the usual mute or ban gesture works unchanged, with the usual undo.
+
+- If the scammer hides forwarding, Telegram gives only a display name. That card is shown as hidden sender and can only be ignored, because there is no account to act on.
+- Reports are scored by the rules only (no LLM), and are never lower than medium, because a person reported them.
+- Nothing is acted on automatically. The group list is built from the groups the bot has seen messages in since it started; set MODERATED_CHATS (comma separated chat ids) to preload it after a restart.
+- **Tested:** unit tests (reporter check, rate limit, merging, hidden sender, no Telegram call before an explicit action). Not yet verified: a live forward from a second account, which I record in the demo notes when done.
+
 ## Before and during the hackathon
 
 Started from a prototype built before the event. Commits after the first one in this repository were made during the hackathon.
@@ -102,6 +111,7 @@ Added during the event (commits after the first one):
 - Fixed the score direction in the LLM prompt, added Groq and OpenRouter configuration, and a 2.5 s LLM timeout so the queue never stalls.
 - A privacy note, and rewritten submission text and demo script that match the code.
 - Logo, and a recorded demo using the Even Hub simulator.
+- Member reports: forward a scam DM to the bot and it becomes a REPORTED card.
 - Raid alert: Telegram DM and optional Twilio call to on-call moderators when a wave of 3 or more accounts hits.
 
 Everything was tested in the simulator and a Telegram test group, not on real G2 glasses. The demo's voice command used a recorded phrase played into the simulator, and the wave shown is seeded demo data.

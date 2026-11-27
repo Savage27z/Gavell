@@ -40,6 +40,9 @@ const app = buildApp({
 });
 
 if (bot) {
+  for (const raw of (env.MODERATED_CHATS ?? "").split(",").map((c) => c.trim()).filter(Boolean)) {
+    void bot.api.getChat(Number(raw)).then((c) => service.noteChat(c.id, "title" in c && c.title ? c.title : raw)).catch(() => {});
+  }
   bot.command("oncall", async (ctx) => {
     if (ctx.chat.type !== "private" || !ctx.from) return;
     onCall.add(ctx.from.id);
@@ -51,7 +54,33 @@ if (bot) {
   });
   bot.on("message:text", async (ctx) => {
     const chat = ctx.chat;
-    if (chat.type === "private" || !ctx.from || ctx.from.is_bot) return;
+    if (!ctx.from || ctx.from.is_bot) return;
+    if (chat.type === "private") {
+      if (ctx.message.text.startsWith("/")) return;
+      const origin = ctx.message.forward_origin;
+      if (!origin) {
+        await ctx.reply("Forward me a scam DM and I will send it to the moderators. Never share your seed phrase. Admins never DM first.");
+        return;
+      }
+      const sender =
+        origin.type === "user"
+          ? { userId: origin.sender_user.id, username: origin.sender_user.username ?? null, name: origin.sender_user.first_name }
+          : origin.type === "hidden_user"
+            ? { name: origin.sender_user_name }
+            : { name: origin.type === "channel" || origin.type === "chat" ? origin.type : undefined };
+      const result = await service.report({ reporterId: ctx.from.id, text: ctx.message.text, sender });
+      await ctx.reply(
+        result.status === "queued"
+          ? "Thanks, sent to the mods. Never share your seed phrase. Admins never DM first."
+          : result.reason === "not-member"
+            ? "I can only take reports from members of a group I moderate."
+            : result.reason === "rate-limit"
+              ? "That is a lot of reports at once. Please wait a few minutes."
+              : "I could not read any text in that message.",
+      );
+      return;
+    }
+    service.noteChat(chat.id, chat.title);
     await service.ingest({
       chatId: chat.id,
       chatTitle: chat.title,

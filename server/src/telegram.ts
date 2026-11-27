@@ -6,6 +6,8 @@ export interface TelegramGateway {
   muteChatMember(chatId: number, userId: number, untilUnix: number): Promise<void>;
   unmuteChatMember(chatId: number, userId: number): Promise<void>;
   deleteMessage(chatId: number, messageId: number): Promise<void>;
+  /** "member", "restricted", "left", ... ; "left" when the lookup fails. */
+  memberStatus(chatId: number, userId: number): Promise<string>;
 }
 
 export class GrammyGateway implements TelegramGateway {
@@ -40,5 +42,13 @@ export class GrammyGateway implements TelegramGateway {
 
   async deleteMessage(chatId: number, messageId: number) {
     await this.bot.api.deleteMessage(chatId, messageId);
+  }
+
+  async memberStatus(chatId: number, userId: number) {
+    try {
+      return (await this.bot.api.getChatMember(chatId, userId)).status;
+    } catch {
+      return "left";
+    }
   }
 }

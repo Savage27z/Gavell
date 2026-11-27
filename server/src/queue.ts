@@ -38,7 +38,7 @@ export class ModQueue {
     const item: StoredItem = {
       ...input,
       offenses,
-      suggested: suggest(input.risk, offenses),
+      suggested: input.userId === 0 ? { action: "ignore" } : suggest(input.risk, offenses),
       text: input.text.slice(0, 400),
       reason: input.reason.slice(0, 60),
       id: randomUUID(),
@@ -56,6 +56,17 @@ export class ModQueue {
       (a, b) => riskRank[b.risk] - riskRank[a.risk] || Date.parse(a.flaggedAt) - Date.parse(b.flaggedAt),
     )[0];
     return top && this.withWave(top);
+  }
+
+  findReport(chatId: number, userId: number): StoredItem | undefined {
+    return this.pending.find((i) => i.source === "report" && i.chatId === chatId && i.userId === userId && userId !== 0);
+  }
+
+  setReports(id: string, reports: number): void {
+    const item = this.get(id);
+    if (!item) return;
+    item.reports = reports;
+    this.save();
   }
 
   get(id: string): StoredItem | undefined {

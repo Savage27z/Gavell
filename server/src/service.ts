@@ -9,6 +9,17 @@ import type { ActionRequest, FlaggedItem, IncomingMessage, StoredItem } from "./
 const UNDO_WINDOW_MS = 60_000;
 const FLAG_THRESHOLD = 0.35;
 const RECENT_PER_USER = 50;
+const REPORT_LIMIT = 5;
+const REPORT_WINDOW_MS = 10 * 60_000;
+
+export interface ReportInput {
+  reporterId: number;
+  text: string;
+  /** The forwarded sender. userId is missing when the sender hides forwarding. */
+  sender: { userId?: number; username?: string | null; name?: string };
+}
+
+export type ReportResult = { status: "queued"; targets: number; reports: number } | { status: "rejected"; reason: "not-member" | "rate-limit" | "empty" };
 
 interface UndoEntry {
   item: StoredItem;
@@ -23,6 +34,9 @@ export class ModService {
   private undos = new Map<string, UndoEntry>();
   private locks = new Map<string, Promise<void>>();
   private versions = new Map<string, number>();
+  private chats = new Map<number, string>();
+  private reportLog = new Map<number, number[]>();
+  private reporters = new Map<string, Set<number>>();
 
   constructor(
     readonly queue: ModQueue,
@@ -31,6 +45,67 @@ export class ModService {
     private now: () => number = Date.now,
     private watcher?: RaidWatcher,
   ) {}
+
+  noteChat(chatId: number, title: string): void {
+    this.chats.set(chatId, title);
+  }
+
+  /** A member forwarded a scam DM to the bot. Never acts; only queues for a moderator. */
+  async report(input: ReportInput): Promise<ReportResult> {
+    const text = input.text.trim();
+    if (!text) return { status: "rejected", reason: "empty" };
+    const now = this.now();
+    const log = (this.reportLog.get(input.reporterId) ?? []).filter((t) => now - t < REPORT_WINDOW_MS);
+    if (log.length >= REPORT_LIMIT) return { status: "rejected", reason: "rate-limit" };
+    const known = [...this.chats.entries()];
+    const reporterChats: [number, string][] = [];
+    for (const [id, title] of known) {
+      if (!this.tg || ["member", "administrator", "creator", "restricted"].includes(await this.tg.memberStatus(id, input.reporterId))) reporterChats.push([id, title]);
+    }
+    if (!reporterChats.length && (this.tg || known.length)) return { status: "rejected", reason: "not-member" };
+    this.reportLog.set(input.reporterId, [...log, now]);
+    const scammer = input.sender.userId;
+    const targets: [number, string][] = [];
+    if (scammer && scammer !== input.reporterId) {
+      for (const [id, title] of reporterChats) {
+        if (!this.tg || ["member", "restricted"].includes(await this.tg.memberStatus(id, scammer))) targets.push([id, title]);
+      }
+    }
+    const verdict = classify(text);
+    const score = Math.max(verdict.score, 0.35);
+    const risk = verdict.risk === "low" ? "medium" : verdict.risk;
+    const reason = ("Reported: " + verdict.reason).slice(0, 60);
+    const label = input.sender.username ?? input.sender.name ?? null;
+    const destinations: [number, string][] = targets.length ? targets : [reporterChats[0] ?? [0, "Direct message"]];
+    let reports = 1;
+    for (const [chatId, chatTitle] of destinations) {
+      const hidden = !targets.length;
+      const existing = hidden ? undefined : this.queue.findReport(chatId, scammer!);
+      if (existing) {
+        const set = this.reporters.get(existing.id) ?? new Set<number>();
+        set.add(input.reporterId);
+        this.reporters.set(existing.id, set);
+        reports = set.size;
+        this.queue.setReports(existing.id, reports);
+        continue;
+      }
+      const item = this.queue.add({
+        chatId,
+        chatTitle,
+        userId: hidden ? 0 : scammer!,
+        username: hidden ? (input.sender.name ?? null) : label,
+        text,
+        messageId: 0,
+        risk,
+        score,
+        reason,
+        source: "report",
+        reports: 1,
+      });
+      this.reporters.set(item.id, new Set([input.reporterId]));
+    }
+    return { status: "queued", targets: targets.length, reports };
+  }
 
   async ingest(msg: IncomingMessage): Promise<FlaggedItem | null> {
     const key = `${msg.chatId}:${msg.userId}`;
@@ -85,8 +160,8 @@ export class ModService {
     const key = `${item.chatId}:${item.userId}`;
     try {
       return await this.serialize(key, async () => {
-        if (req.action !== "ignore" && this.tg && !item.demo) {
-          const toDelete = new Set<number>([item.messageId]);
+        if (req.action !== "ignore" && this.tg && !item.demo && item.userId !== 0) {
+          const toDelete = new Set<number>(item.messageId > 0 ? [item.messageId] : []);
           const known = this.recent.get(key) ?? [];
           if (req.deleteRecent) known.slice(-req.deleteRecent).forEach((m) => toDelete.add(m));
           if (req.action === "ban") {
@@ -127,7 +202,7 @@ export class ModService {
         this.undos.delete(token);
         return false;
       }
-      if (this.tg && !entry.item.demo) {
+      if (this.tg && !entry.item.demo && entry.item.userId !== 0) {
         if (entry.action === "ban") await this.tg.unbanChatMember(entry.item.chatId, entry.item.userId);
         if (entry.action === "mute") await this.tg.unmuteChatMember(entry.item.chatId, entry.item.userId);
       }
